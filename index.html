@@ -1,0 +1,160 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 20%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+
+			table {
+				width: 100%;
+				text-align: center;
+				border-collapse: collapse;
+			}
+
+			td, th {
+				text-align: center;
+				padding: 8px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>Mesh to Gaussian Splat – Milestone Report</h1>
+		<div style="text-align: center;">
+			<h4>Team: Travis Le (CS184), Andrew Kim (CS184), Bharagth Ravindhran (CS184), Emma Yang (CS184)</h4>
+		</div>
+
+		<br>
+
+		Link to webpage: <a href="https://cs184-fa26-gaussiansplatting.github.io/final-project-milestone/">https://cs184-fa26-gaussiansplatting.github.io/final-project-milestone/</a>
+
+		<br>
+
+		Link to GitHub repository: <a href="https://github.com/cs184-fa26-gaussiansplatting/final-project-milestone">https://github.com/cs184-fa26-gaussiansplatting/final-project-milestone</a>
+
+		<h2>Summary / What We Have Accomplished</h2>
+		<p>
+			We built the pre-training half of the mesh-to-gsplat pipeline and ran it end-to-end on one test mesh.
+			<code>src/sample.py</code> area-weighted barycentric-samples an <code>.obj</code> (+ sidecar <code>.mtl</code>) into a 10k-point
+			cloud (<code>output/points.npy</code>, <code>output/points.ply</code> preview).
+			<code>blender/setup_scene.py</code> imports the mesh, bundles an HDRI, and renders 8 reference images from an
+			orb of cameras (<code>output/renders/camXX.png</code> + <code>output/cameras.json</code>).
+			<code>src/convert.py</code> converts the point cloud into an initial <code>output/splat.ply</code> (mean, SH-DC color,
+			scale 0.005, quaternion from normal, opacity 0.95) in the gsplat/SuperSplat binary layout.
+			Timing is recorded for load/sample/save and conversion.
+		</p>
+
+		<h2>Preliminary Results</h2>
+		<ul>
+			<li>10,000 points sampled from <code>data/test.obj</code>; degenerate faces skipped.</li>
+			<li>8 reference renders captured from evenly spaced orb cameras pointing at the model center.</li>
+			<li><code>output/splat.ply</code> written (10k Gaussians) and opens in SuperSplat for inspection.</li>
+			<li>Sampling completes in well under a second; conversion is near-instant, so the
+				milestone timing target (fast .obj→.ply pre-training output) is met.</li>
+		</ul>
+
+		<h2>Progress Reflection vs. Plan</h2>
+		<p>
+			Per the milestone plan we scoped out sampling, conversion, Blender rendering, an end-to-end run,
+			the webpage, video, and slides — and deliberately deferred full training, Adaptive Density Control,
+			adaptive cameras, and the final report. All in-scope milestone items are complete and the pipeline
+			produces a viewable <code>.ply</code>. Render cost stayed bounded by limiting coverage to 8 cameras,
+			addressing the identified risk. Remaining work: training loop, densification/optimization, and
+			final deliverables (video, slides, PDF).
+		</p>
+
+		<h2>Updated Work Plan</h2>
+		<table border="3">
+			<tr>
+				<th>Week</th>
+				<th>Tasks</th>
+				<th>Status</th>
+			</tr>
+			<tr>
+				<td>Week 1<br>(Nov 13&ndash;19)</td>
+				<td style="text-align:left;">
+					<ul>
+						<li>Set up environment; select test .obj models</li>
+						<li>Naive 3D model&rarr;Gaussian splat working (few cameras)</li>
+						<li><b>Milestone report, video, slides due Nov 22.</b></li>
+					</ul>
+				</td>
+				<td>In progress</td>
+			</tr>
+			<tr>
+				<td>Week 2<br>(Nov 20&ndash;26)</td>
+				<td style="text-align:left;">
+					<ul>
+						<li>Implement training loop: Gaussian parameter SGD, depth regularization for sparse views</li>
+						<li>Expand camera setup/rendering; look for optimizations</li>
+					</ul>
+				</td>
+				<td>Up next</td>
+			</tr>
+			<tr>
+				<td>Week 3<br>(Nov 27&ndash;Dec 3)</td>
+				<td style="text-align:left;">
+					<ul>
+						<li>Continue optimizing conversion; densification (maybe)</li>
+						<li><b>Freeze results Dec 3</b> for final presentation</li>
+					</ul>
+				</td>
+				<td>Up next</td>
+			</tr>
+			<tr>
+				<td>Week 4<br>(Dec 4&ndash;8)</td>
+				<td style="text-align:left;">
+					<ul>
+						<li>Final report webpage, 1&ndash;2 min video, slides, rehearse 5-min presentation + live demo</li>
+						<li><b>Final deliverables due Dec 6; presentations Dec 7&ndash;8.</b></li>
+					</ul>
+				</td>
+				<td>Up next</td>
+			</tr>
+		</table>
+
+		<h2>CI/CD</h2>
+		<p>
+			This page is deployed via GitHub Pages to the repository above; pushing to <code>main</code>
+			rebuilds and publishes the milestone webpage automatically (no Jekyll processing, <code>.nojekyll</code>).
+		</p>
+
+		<h2>Resources</h2>
+		<h3>Papers and Articles</h3>
+		<p>References are formatted in IEEE style.</p>
+		<ul>
+			<li>[1] B. Kerbl, G. Kopanas, T. Leimk&uuml;hler, and G. Drettakis, "<a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/">3D Gaussian Splatting for Real-Time Radiance Field Rendering</a>," <i>ACM Trans. Graph.</i>, vol. 42, no. 4, Art. no. 139, Jul. 2023.</li>
+			<li>[5] Z. Fan et al., "<a href="https://arxiv.org/abs/2403.20309">InstantSplat: Unbounded Sparse-View Pose-Free Gaussian Splatting in 40 Seconds</a>," arXiv preprint arXiv:2403.20309, 2024.</li>
+			<li>[6] Y. Chen et al., "<a href="https://arxiv.org/abs/2403.14627">MVSplat: Efficient 3D Gaussian Splatting from Sparse Multi-View Images</a>," arXiv preprint arXiv:2403.14627, 2024.</li>
+		</ul>
+		<h3>Software and Starting Point</h3>
+		<ul>
+			<li><code>gsplat</code> as the differentiable CUDA rasterization engine; optimizer, densification, and metrics written by us.</li>
+			<li><code>SuperSplat</code> to view <code>.ply</code> files; Blender 4.x for reference rendering.</li>
+		</ul>
+		<h3>Computing Platform</h3>
+		<ul>
+			<li>Local CUDA GPU if available, else Colab or a rented cloud GPU (AutoDL); scenes kept small for a single modest GPU.</li>
+		</ul>
+		</div>
+	</body>
+</html>
