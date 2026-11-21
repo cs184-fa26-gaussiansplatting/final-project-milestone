@@ -4,6 +4,8 @@ import os
 
 import bpy
 
+from mathutils import Vector
+
 
 def clear_scene():
     bpy.ops.object.select_all(action="SELECT")
@@ -39,7 +41,7 @@ def setup_hdri(hdri_path=None):
 def import_mesh(mesh_path):
     ext = os.path.splitext(mesh_path)[1].lower()
     if ext == ".obj":
-        bpy.ops.import_scene.obj(filepath=mesh_path)
+        bpy.ops.wm.obj_import(filepath=mesh_path)
     elif ext == ".ply":
         bpy.ops.import_mesh.ply(filepath=mesh_path)
     elif ext == ".glb" or ext == ".gltf":
@@ -50,15 +52,30 @@ def import_mesh(mesh_path):
     return [o for o in bpy.context.selected_objects if o.type == "MESH"]
 
 
-def add_camera(location, look_at, name):
+def add_camera(location, look_at, name = "Camera"):
+    location = Vector(location)
+    look_at = Vector(look_at)
+    
     cam_data = bpy.data.cameras.new(name)
-    cam = bpy.data.objects.new(name, cam_data)
-    bpy.context.collection.objects.link(cam)
-    cam.location = location
+    cam_obj = bpy.data.objects.new(name, cam_data)
+    bpy.context.collection.objects.link(cam_obj)
+    cam_obj.location = location
+
     direction = look_at - location
-    rot_quat = direction.to_track_quat("-Z", "Y")
-    cam.rotation_euler = rot_quat.to_euler()
-    return cam
+    
+    cam_obj.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
+
+    return cam_obj
+    
+    # cam_data = bpy.data.cameras.new(name)
+    # cam = bpy.data.objects.new(name, cam_data)
+    # bpy.context.collection.objects.link(cam)
+    # cam.location = location
+    # direction = look_at - location
+    # rot_quat = direction.to_track_quat("-Z", "Y")
+    # cam.rotation_euler = rot_quat.to_euler()
+    
+    # return cam
 
 
 def orb_camera_positions(center, radius, n=8):
